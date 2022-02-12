@@ -8,8 +8,13 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
+import java.util.Random;
+
 
 import static edu.neu.coe.info6205.util.Utilities.formatWhole;
+
+import edu.neu.coe.info6205.sort.elementary.InsertionSort;
+
 
 /**
  * This class implements a simple Benchmark utility for measuring the running time of algorithms.
@@ -125,4 +130,72 @@ public class Benchmark_Timer<T> implements Benchmark<T> {
     private final Consumer<T> fPost;
 
     final static LazyLogger logger = new LazyLogger(Benchmark_Timer.class);
+
+    public static final int N = 7000;
+
+    public static void main(String[] args) {
+        int m = 50;
+        int n = 2000;
+        Random rand = new Random();
+
+        for (int l = 0; l < 6; l++) {
+            int N = n;
+            InsertionSort<Integer> objInsSort = new InsertionSort<>();
+            Consumer<Integer[]> consumer = array -> objInsSort.sort(array, 0, array.length);
+            Benchmark_Timer<Integer[]> objBenchmarkTimer = new Benchmark_Timer<>("Benchmarking for insertion Sort: No. of Integers = " + n, consumer);
+
+            // Get random ordered Integer array
+            Supplier<Integer[]> randomIntegers = () -> {
+                Integer[] arr = new Integer[N];
+                for(int i = 0; i < N; i++){
+                    arr[i] = rand.nextInt();
+                }
+                return arr;
+            };
+
+            // Get Partially ordered Integer array : first half sorted, second half random array
+            Supplier<Integer[]> partiallyOrdered = () -> {
+                Integer[] arr = new Integer[N];
+                for(int i = 0; i < N/2; i++){
+                    arr[i] = i;
+                }
+                for(int i = N/2; i < N; i++){
+                    arr[i] = rand.nextInt();
+                }
+                return arr;
+            };
+
+            // Get sorted integer array
+            Supplier<Integer[]> orderedIntegers = () -> {
+                Integer[] arr = new Integer[N];
+                for(int i = 0; i < N; i++){
+                    arr[i] = i;
+                }
+                return arr;
+            };
+
+            // Get reversed ordered integer array
+            Supplier<Integer[]> reversedOrdered = () -> {
+                Integer[] arr = new Integer[N];
+                for(int i = 0; i < N; i++){
+                    arr[i] = N-i;
+                }
+                return arr;
+            };
+            double orderedTime = objBenchmarkTimer.runFromSupplier(orderedIntegers, m);
+            double randomTime = objBenchmarkTimer.runFromSupplier(randomIntegers, m);
+            double partialTime = objBenchmarkTimer.runFromSupplier(partiallyOrdered, m);
+            double reversedTime = objBenchmarkTimer.runFromSupplier(reversedOrdered, m);
+
+            System.out.println(" @@@--- ********************************************** ---@@@");
+            System.out.println("Integers to be sorted = " + n);
+            System.out.println("Average time taken for : Sorted Array = " + orderedTime + " ms");
+            System.out.println("Average time taken for : Random Array  = " + randomTime + " ms");
+            System.out.println("Average time taken for : Partially Ordered Array = " + partialTime + " ms");
+            System.out.println("Average time taken for : Reversed Ordered Array   = " + reversedTime + " ms");
+            n = n * 2;
+            System.out.println(" @@@--- ********************************************** ---@@@");
+        }
+    }
+
 }
